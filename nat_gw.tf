@@ -7,7 +7,7 @@ resource "aws_nat_gateway" "nat_gw" {
   allocation_id = aws_eip.nat.id
   subnet_id     = aws_subnet.public_a.id
   tags = {
-    Name = "eks-nat"
+    Name    = "eks-nat"
     Project = var.project
   }
 }
@@ -15,7 +15,7 @@ resource "aws_nat_gateway" "nat_gw" {
 resource "aws_route_table" "private_rt" {
   vpc_id = aws_vpc.eks_dev.id
   tags = {
-    Name = "eks-private-rt"
+    Name    = "eks-private-rt"
     Project = var.project
   }
 }
