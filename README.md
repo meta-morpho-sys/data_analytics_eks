@@ -4,7 +4,8 @@ This repository contains the code to create an EKS cluster with a managed node g
 It is based on a case study for an interview process.
 
 
-It is a template which sets up the basic infrastructure for an EKS cluster with a managed node group. It also creates a VPC, subnets, security groups, and IAM roles.
+It is a template which sets up the basic infrastructure for an EKS cluster with a managed node group. 
+It also creates a VPC, subnets, security groups, IAM roles and integrates an OIDC provider.
 
 To-Do:
 1. IRSA Usage:
