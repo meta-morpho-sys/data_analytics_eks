@@ -51,3 +51,25 @@ data "tls_certificate" "oidc" {
   url = local.eks_cluster_oidc_url
 }
 
+
+# Example IAM role for a specific service account (just an illustration)
+resource "aws_iam_role" "irsa_example_role" {
+  name               = "demo-irsa-example-role"
+  assume_role_policy = data.aws_iam_policy_document.irsa_assume_role.json
+}
+
+data "aws_iam_policy_document" "irsa_assume_role" {
+  statement {
+    actions = ["sts:AssumeRoleWithWebIdentity"]
+    principals {
+      type        = "Federated"
+      identifiers = [aws_iam_openid_connect_provider.eks_oidc.arn]
+    }
+    # This condition means the service account name is 'demo-analytics-app-sa' in the 'default' namespace
+    condition {
+      test     = "StringEquals"
+      variable = "${replace(local.eks_cluster_oidc_url, "https://", "")}:sub"
+      values   = ["system:serviceaccount:default:demo-analytics-app-sa"]
+    }
+  }
+}
