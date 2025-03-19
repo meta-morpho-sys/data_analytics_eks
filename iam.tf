@@ -1,6 +1,12 @@
 ########################################
 # EKS Cluster IAM Roles & Policies
 ########################################
+locals {
+    # The OIDC provider URL is required for EKS to enable IRSA
+    eks_cluster_oidc_url       = aws_eks_cluster.data_analytics_cluster.identity.0.oidc.0.issuer
+    # "The certificate data for the OIDC provider"
+    tls_cert_sha1 = data.tls_certificate.oidc.certificates.0.sha1_fingerprint
+}
 
 # EKS Cluster Service Role
 resource "aws_iam_role" "eks_cluster" {
@@ -23,3 +29,25 @@ resource "aws_iam_policy_attachment" "eks_cluster_AmazonEKSClusterPolicy" {
   policy_arn = "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
   roles      = [aws_iam_role.eks_cluster.name]
 }
+
+
+########################################
+# IRSA (IAM Roles for Service Accounts)
+########################################
+# An OIDC identity provider is required for EKS to enable IRSA.
+# This allows K8s Service Accounts to assume IAM roles without hardcoding AWS credentials in the pod.
+# EKS trusts the OIDC issuer URL from the cluster, and when a pod presents the correct service account token,
+# AWS can verify it against that OIDC provider.
+
+
+resource "aws_iam_openid_connect_provider" "eks_oidc" {
+  url             = local.eks_cluster_oidc_url
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = [local.tls_cert_sha1]
+}
+
+
+data "tls_certificate" "oidc" {
+  url = local.eks_cluster_oidc_url
+}
+
